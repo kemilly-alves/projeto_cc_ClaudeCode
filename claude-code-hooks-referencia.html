@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Hooks — Referência</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;500;700;800&display=swap');
+
+  :root {
+    --bg: #0a0a0b;
+    --surface: #111114;
+    --surface2: #18181d;
+    --border: #252530;
+    --border2: #2e2e3a;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --dim: #3a3a48;
+
+    --purple: #a78bfa;
+    --purple-bg: #1a1430;
+    --purple-border: #3d2d70;
+
+    --teal: #34d399;
+    --teal-bg: #0a2018;
+    --teal-border: #1a4530;
+
+    --amber: #fbbf24;
+    --amber-bg: #1f1500;
+    --amber-border: #44300a;
+
+    --red: #f87171;
+    --red-bg: #200a0a;
+    --red-border: #4a1818;
+
+    --blue: #60a5fa;
+    --blue-bg: #0a1428;
+    --blue-border: #1a2e50;
+
+    --coral: #fb923c;
+    --coral-bg: #1f0e00;
+    --coral-border: #4a2010;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    padding: 48px 32px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 56px;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .logo-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--purple);
+  }
+
+  .logo-text {
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  h1 span {
+    color: var(--purple);
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 520px;
+    line-height: 1.7;
+  }
+
+  /* Category label */
+  .category {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 48px 0 20px;
+  }
+
+  .category-line {
+    height: 1px;
+    flex: 1;
+    background: var(--border);
+  }
+
+  .category-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* Hook card */
+  .hook {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    background: var(--surface);
+  }
+
+  .hook-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hook-accent {
+    width: 3px;
+    border-radius: 2px;
+    align-self: stretch;
+    flex-shrink: 0;
+    min-height: 40px;
+  }
+
+  .hook-header-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .hook-name-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+
+  .hook-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    letter-spacing: .05em;
+  }
+
+  .badge-block { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+  .badge-noblock { background: var(--surface2); color: var(--muted); border: 1px solid var(--border2); }
+  .badge-async { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+
+  .hook-trigger {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* Grid layout */
+  .hook-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+
+  .hook-col {
+    padding: 18px 20px;
+  }
+
+  .hook-col + .hook-col {
+    border-left: 1px solid var(--border);
+  }
+
+  .col-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .col-label::before {
+    content: '';
+    display: inline-block;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .col-text {
+    font-size: 13px;
+    color: #a0a0b8;
+    line-height: 1.65;
+  }
+
+  /* File path pill */
+  .file-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  /* Code block */
+  .code-block {
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: 18px 20px;
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+
+  .code-file {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    color: #c8c8e0;
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow-x: auto;
+  }
+
+  .kw { color: #a78bfa; }
+  .str { color: #34d399; }
+  .cmt { color: #444458; font-style: italic; }
+  .num { color: #fbbf24; }
+  .fn { color: #60a5fa; }
+  .var { color: #fb923c; }
+
+  /* Two-column code */
+  .code-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .code-split-block {
+    padding: 18px 20px;
+    background: var(--bg);
+  }
+
+  .code-split-block + .code-split-block {
+    border-left: 1px solid var(--border);
+  }
+
+  /* Warning strip */
+  .warn-strip {
+    padding: 10px 20px;
+    background: var(--amber-bg);
+    border-top: 1px solid var(--amber-border);
+    font-size: 12px;
+    color: #9a7a30;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .warn-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--amber); flex-shrink: 0; }
+
+  /* Exit codes */
+  .exit-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 48px;
+    margin-bottom: 16px;
+  }
+
+  .exit-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    background: var(--surface);
+  }
+
+  .exit-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .exit-card.ok .exit-code { color: var(--teal); }
+  .exit-card.warn .exit-code { color: var(--amber); }
+  .exit-card.err .exit-code { color: var(--red); }
+
+  .exit-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  /* Colors per category */
+  .c-purple { background: var(--purple); }
+  .c-teal   { background: var(--teal); }
+  .c-amber  { background: var(--amber); }
+  .c-red    { background: var(--red); }
+  .c-blue   { background: var(--blue); }
+  .c-coral  { background: var(--coral); }
+
+  @media (max-width: 640px) {
+    body { padding: 24px 16px; }
+    .hook-grid, .code-split { grid-template-columns: 1fr; }
+    .hook-col + .hook-col { border-left: none; border-top: 1px solid var(--border); }
+    .code-split-block + .code-split-block { border-left: none; border-top: 1px solid var(--border); }
+    .exit-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-row">
+    <div class="logo-dot"></div>
+    <span class="logo-text">Claude Code · Referência de Hooks</span>
+  </div>
+  <h1>Hooks do <span>Claude Code</span></h1>
+  <p class="subtitle">Evento, quando dispara, onde criar e código pronto para usar.</p>
+</header>
+
+<!-- EXIT CODES -->
+<div class="exit-row">
+  <div class="exit-card ok">
+    <div class="exit-code">exit 0</div>
+    <div class="exit-desc">Sucesso. Claude Code lê o JSON do stdout e continua normalmente.</div>
+  </div>
+  <div class="exit-card err">
+    <div class="exit-code">exit 2</div>
+    <div class="exit-desc">Bloqueante. Stderr vai ao Claude como erro. A ação é impedida.</div>
+  </div>
+  <div class="exit-card warn">
+    <div class="exit-code">exit 1</div>
+    <div class="exit-desc">Não-bloqueante. Aparece como aviso no transcript, execução continua.</div>
+  </div>
+</div>
+
+<!-- ─── SESSÃO ─── -->
+<div class="category">
+  <span class="category-label">início de sessão</span>
+  <div class="category-line"></div>
+</div>
+
+<!-- SessionStart -->
+<div class="hook">
+  <div class="hook-header">
+    <div class="hook-accent c-purple"></div>
+    <div class="hook-header-content">
+      <div class="hook-name-row">
+        <span class="hook-name">SessionStart</span>
+        <span class="badge badge-noblock">não bloqueia</span>
+      </div>
+      <div class="hook-trigger">Dispara toda vez que uma sessão começa (<code>startup</code>), é retomada (<code>resume</code>), após <code>/clear</code> ou após compactação.</div>
+    </div>
+  </div>
+  <div class="hook-grid">
+    <div class="hook-col">
+      <div class="col-label">quando usar</div>
+      <p class="col-text">Injetar contexto inicial antes do primeiro prompt: branch atual do git, arquivos modificados, issue ativa, variáveis de ambiente do projeto.</p>
+    </div>
+    <div class="hook-col">
+      <div class="col-label">onde criar</div>
+      <span class="file-pill">~/.claude/settings.json</span><br>
+      <span class="file-pill">.claude/settings.json</span>
+      <p class="col-text" style="margin-top:8px">Crie o script em <code style="font-family:JetBrains Mono,monospace;font-size:11px">.claude/hooks/session-start.sh</code> e dê <code style="font-family:JetBrains Mono,monospace;font-size:11px">chmod +x</code>.</p>
+    </div>
+  </div>
+  <div class="code-split">
+    <div class="code-split-block">
+      <div class="code-header">
+        <span class="code-lang">bash</span>
+        <span class="code-file">.claude/hooks/session-start.sh</span>
+      </div>
+<pre><span class="cmt">#!/bin/bash</span>
+BRANCH=$(git rev-parse --abbrev-ref HEAD <span class="num">2</span>>/dev/null)
+CHANGED=$(git diff --name-only | head -5 | tr '\n' ', ')
+
+jq -n \
+  --arg b <span class="str">"$BRANCH"</span> \
+  --arg f <span class="str">"$CHANGED"</span> \
+  <span class="str">'{
+    hookSpecificOutput: {
+      hookEventName: "SessionStart",
+      additionalContext: ("Branch: " + $b + "\nModificados: " + $f)
+    }
+  }'</span>
+
+exit <span class="num">0</span></pre>
+    </div>
+    <div class="code-split-block">
+      <div class="code-header">
+        <span class="code-lang">json</span>
+        <span class="code-file">.claude/settings.json</span>
+      </div>
+<pre>{
+  <span class="str">"hooks"</span>: {
+    <span class="str">"SessionStart"</span>: [
+      {
+        <span class="str">"matcher"</span>: <span class="str">"startup"</span>,
+        <span class="str">"hooks"</span>: [
+          {
+            <span class="str">"type"</span>: <span class="str">"command"</span>,
+            <span class="str">"command"</span>: <span class="str">"\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/session-start.sh"</span>
+          }
+        ]
+      }
+    ]
+  }
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ─── ANTES DA TOOL ─── -->
+<div class="category">
+  <span class="category-label">antes da tool executar</span>
+  <div class="category-line"></div>
+</div>
+
+<!-- PreToolUse -->
+<div class="hook">
+  <div class="hook-header">
+    <div class="hook-accent c-red"></div>
+    <div class="hook-header-content">
+      <div class="hook-name-row">
+        <span class="hook-name">PreToolUse</span>
+        <span class="badge badge-block">pode bloquear</span>
+      </div>
+      <div class="hook-trigger">Dispara antes de qualquer tool executar: <code>Bash</code>, <code>Edit</code>, <code>Write</code>, <code>Read</code>, <code>Glob</code>, <code>Grep</code>, <code>mcp__*</code>. Use <code>matcher</code> para filtrar qual tool.</div>
+    </div>
+  </div>
+  <div class="hook-grid">
+    <div class="hook-col">
+      <div class="col-label">quando usar</div>
+      <p class="col-text">Bloquear comandos destrutivos (<code>rm -rf</code>, <code>DROP TABLE</code>). Validar que o Claude não vai mexer em arquivo proibido. Modificar o input da tool antes de rodar.</p>
+    </div>
+    <div class="hook-col">
+      <div class="col-label">onde criar</div>
+      <span class="file-pill">.claude/settings.json</span>
+      <p class="col-text" style="margin-top:8px">Use o campo <code style="font-family:JetBrains Mono,monospace;font-size:11px">if</code> para filtrar subcomandos antes de spawnar o script — evita overhead desnecessário.</p>
+    </div>
+  </div>
+  <div class="code-split">
+    <div class="code-split-block">
+      <div class="code-header">
+        <span class="code-lang">bash</span>
+        <span class="code-file">.claude/hooks/block-rm.sh</span>
+      </div>
+<pre><span class="cmt">#!/bin/bash</span>
+CMD=$(cat | jq -r <span class="str">'.tool_input.command'</span>)
+
+<span class="kw">if</span> echo <span class="str">"$CMD"</span> | grep -qE <span class="str">'rm\s+-rf'</span>; then
+  jq -n <span class="str">'{
+    hookSpecificOutput: {
+      hookEventName: "PreToolUse",
+      permissionDecision: "deny",
+      permissionDecisionReason: "rm -rf bloqueado pelo hook de segurança."
+    }
+  }'</span>
+  exit <span class="num">0</span>
+fi
+
+exit <span class="num">0</span></pre>
+    </div>
+    <div class="code-split-block">
+      <div class="code-header">
+        <span class="code-lang">json</span>
+        <span class="code-file">.claude/settings.json</span>
+      </div>
+<pre>{
+  <span class="str">"hooks"</span>: {
+    <span class="str">"PreToolUse"</span>: [
+      {
+        <span class="str">"matcher"</span>: <span class="str">"Bash"</span>,
+        <span class="str">"hooks"</span>: [
+          {
+            <span class="str">"type"</span>: <span class="str">"command"</span>,
+            <span class="str">"if"</span>: <span class="str">"Bash(rm -rf *)"</span>,
+            <span class="str">"command"</span>: <span class="str">"\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-rm.sh"</span>
+          }
+        ]
+      }
+    ]
+  }
+}</pre>
+    </div>
+  </div>
+  <div class="warn-strip">
+    <div class="warn-dot"></div>
+    <span>permissionDecision aceita: <strong>allow</strong> · <strong>deny</strong> · <strong>ask</strong> · <strong>defer</strong>. Não use "block" aqui — esse é o formato antigo, deprecado para PreToolUse.</span>
+  </div>
+</div>
+
+<!-- ─── DEPOIS DA TOOL ─── -->
+<div class="category">
+  <span class="category-label">após a tool executar</span>
+  <div class="category-line"></div>
+</div>
+
+<!-- PostToolUse -->
+<div class="hook">
+  <div class="hook-header">
+    <div class="hook-accent c-teal"></div>
+    <div class="hook-header-content">
+      <div class="hook-name-row">
+        <span class="hook-name">PostToolUse</span>
+        <span class="badge badge-noblock">tool já rodou</span>
+      </div>
+      <div class="hook-trigger">Dispara logo após uma tool executar com sucesso. Recebe <code>tool_input</code> (o que o Claude mandou) e <code>tool_response</code> (o resultado). Use <code>matcher</code> para filtrar qual tool.</div>
+    </div>
+  </div>
+  <div class="hook-grid">
+    <div class="hook-col">
+      <div class="col-label">quando usar</div>
+      <p class="col-text">Rodar lint/typecheck após edição de arquivo e injetar erros de volta no contexto. Log de auditoria de arquivos editados. Validar formato do output antes do Claude continuar.</p>
+    </div>
+    <div class="hook-col">
+      <div class="col-label">onde criar</div>
+      <span class="file-pill">.claude/settings.json</span>
+      <p class="col-text" style="margin-top:8px"><code style="font-family:JetBrains Mono,monospace;font-size:11px">additionalContext</code> injeta texto no contexto do Claude. O Claude vê e corrige sem você pedir nada.</p>
+    </div>
+  </div>
+  <div class="code-split">
+    <div class="code-split-block">
+      <div class="code-header">
+        <span class="code-lang">bash</span>
+        <span class="code-file">.claude/hooks/tsc-check.sh</span>
+      </div>
+<pre><span class="cmt">#!/bin/bash</span>
+FILE=$(cat | jq -r <span class="str">'.tool_input.file_path // empty'</span>)
+
+<span class="cmt"># só roda para arquivos TypeScript</span>
+<span class="kw">if</span> [[ <span class="str">"$FILE"</span> != *.ts && <span class="str">"$FILE"</span> != *.tsx ]]; then
+  exit <span class="num">0</span>
+fi
+
+OUT=$(npx tsc --noEmit <span class="num">2</span>>&1)
+
+<span class="kw">if</span> [ $? -ne <span class="num">0</span> ]; then
+  jq -n --arg e <span class="str">"$OUT"</span> \
+  <span class="str">'{
+    hookSpecificOutput: {
+      hookEventName: "PostToolUse",
+      additionalContext: ("Erros de tipo encontrados:\n" + $e)
+    }
+  }'</span>
+fi
+
+exit <span class="num">0</span></pre>
+    </div>
+    <div class="code-split-block">
+      <div class="code-header">
+        <span class="code-lang">json</span>
+        <span class="code-file">.claude/settings.json</span>
+      </div>
+<pre>{
+  <span class="str">"hooks"</span>: {
+    <span class="str">"PostToolUse"</span>: [
+      {
+        <span class="str">"matcher"</span>: <span class="str">"Edit|Write"</span>,
+        <span class="str">"hooks"</span>: [
+          {
+            <span class="str">"type"</span>: <span class="str">"command"</span>,
+            <span class="str">"command"</span>: <span class="str">"\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/tsc-check.sh"</span>
+          }
+        ]
+      }
+    ]
+  }
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- PostToolUse async -->
+<div class="hook">
+  <div class="hook-header">
+    <div class="hook-accent c-blue"></div>
+    <div class="hook-header-content">
+      <div class="hook-name-row">
+        <span class="hook-name">PostToolUse <span style="font-weight:400;color:#6b6b80">+ async: true</span></span>
+        <span class="badge badge-async">background</span>
+      </div>
+      <div class="hook-trigger">Igual ao PostToolUse, mas o Claude não espera o script terminar. O resultado chega no próximo turno via <code>systemMessage</code>. Só disponível no tipo <code>command</code>.</div>
+    </div>
+  </div>
+  <div class="hook-grid">
+    <div class="hook-col">
+      <div class="col-label">quando usar</div>
+      <p class="col-text">Quando a operação demora: rodar a suíte de testes completa, build da aplicação, deploy, análise estática pesada. Claude continua trabalhando enquanto isso roda.</p>
+    </div>
+    <div class="hook-col">
+      <div class="col-label">onde criar</div>
+      <span class="file-pill">.claude/settings.json</span>
+      <p class="col-text" style="margin-top:8px">Hooks async <strong>não podem bloquear</strong>. Use <code style="font-family:JetBrains Mono,monospace;font-size:11px">systemMessage</code> no stdout para que o resultado apareça na interface do usuário.</p>
+    </div>
+  </div>
+  <div class="code-split">
+    <div class="code-split-block">
+      <div class="code-header">
+        <span class="code-lang">bash</span>
+        <span class="code-file">.claude/hooks/run-tests-async.sh</span>
+      </div>
+<pre><span class="cmt">#!/bin/bash</span>
+FILE=$(cat | jq -r <span class="str">'.tool_input.file_path // empty'</span>)
+
+<span class="kw">if</span> npm test > /dev/null <span class="num">2</span>>&1; then
+  jq -n --arg f <span class="str">"$FILE"</span> \
+  <span class="str">'{"systemMessage": ("✓ Testes passaram após editar " + $f)}'</span>
+<span class="kw">else</span>
+  jq -n --arg f <span class="str">"$FILE"</span> \
+  <span class="str">'{"systemMessage": ("✗ Testes falharam após editar " + $f)}'</span>
+fi</pre>
+    </div>
+    <div class="code-split-block">
+      <div class="code-header">
+        <span class="code-lang">json</span>
+        <span class="code-file">.claude/settings.json</span>
+      </div>
+<pre>{
+  <span class="str">"hooks"</span>: {
+    <span class="str">"PostToolUse"</span>: [
+      {
+        <span class="str">"matcher"</span>: <span class="str">"Write|Edit"</span>,
+        <span class="str">"hooks"</span>: [
+          {
+            <span class="str">"type"</span>: <span class="str">"command"</span>,
+            <span class="str">"command"</span>: <span class="str">"\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-tests-async.sh"</span>,
+            <span class="str">"async"</span>: <span class="kw">true</span>,
+            <span class="str">"timeout"</span>: <span class="num">120</span>
+          }
+        ]
+      }
+    ]
+  }
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ─── QUANDO CLAUDE TERMINA ─── -->
+<div class="category">
+  <span class="category-label">quando o claude termina de responder</span>
+  <div class="category-line"></div>
+</div>
+
+<!-- Stop -->
+<div class="hook">
+  <div class="hook-header">
+    <div class="hook-accent c-amber"></div>
+    <div class="hook-header-content">
+      <div class="hook-name-row">
+        <span class="hook-name">Stop</span>
+        <span class="badge badge-block">pode forçar continuar</span>
+      </div>
+      <div class="hook-trigger">Dispara quando o agente principal considera que terminou. Não dispara em interrupção do usuário. Verifique <code>stop_hook_active</code> no input para evitar loop infinito.</div>
+    </div>
+  </div>
+  <div class="hook-grid">
+    <div class="hook-col">
+      <div class="col-label">quando usar</div>
+      <p class="col-text">Quality gate final: impedir o Claude de declarar que terminou se os testes estão falhando, se faltam arquivos esperados, ou se tem erros de lint. É a garantia mais forte de qualidade.</p>
+    </div>
+    <div class="hook-col">
+      <div class="col-label">onde criar</div>
+      <span class="file-pill">.claude/settings.json</span>
+      <p class="col-text" style="margin-top:8px">Retorne <code style="font-family:JetBrains Mono,monospace;font-size:11px">decision: "block"</code> com <code style="font-family:JetBrains Mono,monospace;font-size:11px">reason</code> obrigatório. O Claude recebe o motivo e continua trabalhando.</p>
+    </div>
+  </div>
+  <div class="code-split">
+    <div class="code-split-block">
+      <div class="code-header">
+        <span class="code-lang">bash</span>
+        <span class="code-file">.claude/hooks/quality-gate.sh</span>
+      </div>
+<pre><span class="cmt">#!/bin/bash</span>
+INPUT=$(cat)
+
+<span class="cmt"># evita loop: se já está em stop hook, não bloqueia</span>
+ACTIVE=$(echo <span class="str">"$INPUT"</span> | jq -r <span class="str">'.stop_hook_active'</span>)
+<span class="kw">if</span> [ <span class="str">"$ACTIVE"</span> = <span class="str">"true"</span> ]; then
+  exit <span class="num">0</span>
+fi
+
+<span class="kw">if</span> ! npm test > /dev/null <span class="num">2</span>>&1; then
+  jq -n <span class="str">'{
+    "decision": "block",
+    "reason": "Testes estão falhando. Corrija antes de finalizar."
+  }'</span>
+  exit <span class="num">0</span>
+fi
+
+exit <span class="num">0</span></pre>
+    </div>
+    <div class="code-split-block">
+      <div class="code-header">
+        <span class="code-lang">json</span>
+        <span class="code-file">.claude/settings.json</span>
+      </div>
+<pre>{
+  <span class="str">"hooks"</span>: {
+    <span class="str">"Stop"</span>: [
+      {
+        <span class="str">"hooks"</span>: [
+          {
+            <span class="str">"type"</span>: <span class="str">"command"</span>,
+            <span class="str">"command"</span>: <span class="str">"\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/quality-gate.sh"</span>,
+            <span class="str">"timeout"</span>: <span class="num">60</span>
+          }
+        ]
+      }
+    ]
+  }
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TIPO PROMPT ─── -->
+<div class="category">
+  <span class="category-label">tipo prompt — sem script</span>
+  <div class="category-line"></div>
+</div>
+
+<!-- Prompt type -->
+<div class="hook">
+  <div class="hook-header">
+    <div class="hook-accent c-coral"></div>
+    <div class="hook-header-content">
+      <div class="hook-name-row">
+        <span class="hook-name">type: "prompt"</span>
+        <span class="badge badge-noblock">Haiku por padrão</span>
+      </div>
+      <div class="hook-trigger">Funciona em qualquer evento. Em vez de um script bash, o Claude Code chama um modelo LLM com seu prompt e o JSON do evento. O modelo responde com <code>{"ok": true/false, "reason": "..."}</code>.</div>
+    </div>
+  </div>
+  <div class="hook-grid">
+    <div class="hook-col">
+      <div class="col-label">quando usar</div>
+      <p class="col-text">Avaliações em linguagem natural que seriam complexas de fazer em bash: "todas as tarefas foram concluídas?", "o código tem comentários em inglês?", "a resposta está no idioma correto?".</p>
+    </div>
+    <div class="hook-col">
+      <div class="col-label">onde criar</div>
+      <span class="file-pill">.claude/settings.json</span>
+      <p class="col-text" style="margin-top:8px">Use <code style="font-family:JetBrains Mono,monospace;font-size:11px">$ARGUMENTS</code> no prompt para injetar o JSON do evento. Se <code style="font-family:JetBrains Mono,monospace;font-size:11px">ok: false</code>, o <code style="font-family:JetBrains Mono,monospace;font-size:11px">reason</code> vai como instrução para o Claude continuar.</p>
+    </div>
+  </div>
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">json</span>
+      <span class="code-file">.claude/settings.json — Stop hook com avaliação por LLM</span>
+    </div>
+<pre>{
+  <span class="str">"hooks"</span>: {
+    <span class="str">"Stop"</span>: [
+      {
+        <span class="str">"hooks"</span>: [
+          {
+            <span class="str">"type"</span>: <span class="str">"prompt"</span>,
+            <span class="str">"prompt"</span>: <span class="str">"Analise o contexto a seguir e verifique se TODAS as tarefas solicitadas pelo usuário foram concluídas. Contexto: $ARGUMENTS\n\nResponda APENAS com JSON válido:\n- {\"ok\": true} se tudo foi feito\n- {\"ok\": false, \"reason\": \"o que ainda falta\"} se algo ficou pendente"</span>,
+            <span class="str">"timeout"</span>: <span class="num">30</span>
+          }
+        ]
+      }
+    ]
+  }
+}</pre>
+  </div>
+</div>
+
+<!-- ─── NOTIFICAÇÃO ─── -->
+<div class="category">
+  <span class="category-label">notificações e eventos assíncronos</span>
+  <div class="category-line"></div>
+</div>
+
+<!-- Notification -->
+<div class="hook">
+  <div class="hook-header">
+    <div class="hook-accent c-purple"></div>
+    <div class="hook-header-content">
+      <div class="hook-name-row">
+        <span class="hook-name">Notification</span>
+        <span class="badge badge-noblock">side effect apenas</span>
+      </div>
+      <div class="hook-trigger">Dispara quando Claude Code envia uma notificação: <code>permission_prompt</code> (pediu permissão), <code>idle_prompt</code> (Claude ocioso), <code>auth_success</code>. Não pode bloquear — apenas side effects.</div>
+    </div>
+  </div>
+  <div class="hook-grid">
+    <div class="hook-col">
+      <div class="col-label">quando usar</div>
+      <p class="col-text">Receber notificação no celular ou no sistema quando o Claude precisar de atenção, terminar uma tarefa longa, ou estiver aguardando permissão.</p>
+    </div>
+    <div class="hook-col">
+      <div class="col-label">onde criar</div>
+      <span class="file-pill">~/.claude/settings.json</span>
+      <p class="col-text" style="margin-top:8px">Normalmente vai na config global — você quer ser notificado em qualquer projeto, não só em um específico.</p>
+    </div>
+  </div>
+  <div class="code-split">
+    <div class="code-split-block">
+      <div class="code-header">
+        <span class="code-lang">bash</span>
+        <span class="code-file">~/.claude/hooks/notify.sh (macOS)</span>
+      </div>
+<pre><span class="cmt">#!/bin/bash</span>
+INPUT=$(cat)
+MSG=$(echo <span class="str">"$INPUT"</span> | jq -r <span class="str">'.message'</span>)
+TYPE=$(echo <span class="str">"$INPUT"</span> | jq -r <span class="str">'.notification_type'</span>)
+
+osascript -e \
+  "display notification \"$MSG\" with title \"Claude Code\" subtitle \"$TYPE\""
+
+exit <span class="num">0</span></pre>
+    </div>
+    <div class="code-split-block">
+      <div class="code-header">
+        <span class="code-lang">json</span>
+        <span class="code-file">~/.claude/settings.json</span>
+      </div>
+<pre>{
+  <span class="str">"hooks"</span>: {
+    <span class="str">"Notification"</span>: [
+      {
+        <span class="str">"matcher"</span>: <span class="str">"permission_prompt|idle_prompt"</span>,
+        <span class="str">"hooks"</span>: [
+          {
+            <span class="str">"type"</span>: <span class="str">"command"</span>,
+            <span class="str">"command"</span>: <span class="str">"~/.claude/hooks/notify.sh"</span>,
+            <span class="str">"async"</span>: <span class="kw">true</span>
+          }
+        ]
+      }
+    ]
+  }
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SessionEnd -->
+<div class="hook">
+  <div class="hook-header">
+    <div class="hook-accent c-teal"></div>
+    <div class="hook-header-content">
+      <div class="hook-name-row">
+        <span class="hook-name">SessionEnd</span>
+        <span class="badge badge-noblock">não bloqueia</span>
+      </div>
+      <div class="hook-trigger">Dispara quando a sessão encerra: <code>clear</code>, <code>resume</code>, <code>logout</code>, <code>prompt_input_exit</code>, <code>other</code>. Timeout padrão de 1.5s — configure <code>timeout</code> no handler se precisar de mais.</div>
+    </div>
+  </div>
+  <div class="hook-grid">
+    <div class="hook-col">
+      <div class="col-label">quando usar</div>
+      <p class="col-text">Salvar log da sessão, fazer commit automático das alterações, limpar arquivos temporários, ou enviar resumo do que foi feito por email/Slack.</p>
+    </div>
+    <div class="hook-col">
+      <div class="col-label">onde criar</div>
+      <span class="file-pill">.claude/settings.json</span>
+      <p class="col-text" style="margin-top:8px">Timeout padrão: 1.5s. Se precisar de mais tempo, defina <code style="font-family:JetBrains Mono,monospace;font-size:11px">timeout</code> no handler. Máximo configurável: 60s.</p>
+    </div>
+  </div>
+  <div class="code-split">
+    <div class="code-split-block">
+      <div class="code-header">
+        <span class="code-lang">bash</span>
+        <span class="code-file">.claude/hooks/session-end.sh</span>
+      </div>
+<pre><span class="cmt">#!/bin/bash</span>
+INPUT=$(cat)
+REASON=$(echo <span class="str">"$INPUT"</span> | jq -r <span class="str">'.reason'</span>)
+SESSION=$(echo <span class="str">"$INPUT"</span> | jq -r <span class="str">'.session_id'</span>)
+STAMP=$(date +<span class="str">"%Y-%m-%d %H:%M"</span>)
+
+echo <span class="str">"[$STAMP] sessão $SESSION encerrada: $REASON"</span> \
+  >> ~/.claude/session-log.txt
+
+exit <span class="num">0</span></pre>
+    </div>
+    <div class="code-split-block">
+      <div class="code-header">
+        <span class="code-lang">json</span>
+        <span class="code-file">.claude/settings.json</span>
+      </div>
+<pre>{
+  <span class="str">"hooks"</span>: {
+    <span class="str">"SessionEnd"</span>: [
+      {
+        <span class="str">"hooks"</span>: [
+          {
+            <span class="str">"type"</span>: <span class="str">"command"</span>,
+            <span class="str">"command"</span>: <span class="str">"\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/session-end.sh"</span>,
+            <span class="str">"timeout"</span>: <span class="num">10</span>
+          }
+        ]
+      }
+    ]
+  }
+}</pre>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
